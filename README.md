@@ -69,7 +69,7 @@ Using Elasticsearch. Then create index pattern, index template, index lifecycle 
   ```
 
 - **Config Rsyslog to send logs to kafka**
-- 
+
   First we should Provide TCP syslog reception with this options in `/etc/rsyslog.conf`:
   ```
   $ModLoad imtcp
