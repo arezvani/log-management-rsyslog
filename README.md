@@ -67,3 +67,57 @@ Using Elasticsearch. Then create index pattern, index template, index lifecycle 
   ```bash
   nc -k -lv $expose_port
   ```
+
+- **Config Rsyslog to send logs to kafka**
+- 
+  First we should Provide TCP syslog reception with this options in `/etc/rsyslog.conf`:
+  ```
+  $ModLoad imtcp
+  $InputTCPServerRun 9080
+  ```
+
+  Then load module which use for sending message to kafka:
+  ```
+  $ModLoad omkafka
+  ```
+
+  Write template for messages that sent to kafka:
+  ```
+  template(name="json_lines" type="list" option.json="on") {
+        constant(value="{")
+        constant(value="\"timestamp\":\"")      property(name="timereported" dateFormat="rfc3339")
+        constant(value="\",\"message\":\"")     property(name="msg")
+        constant(value="\",\"host\":\"")        property(name="hostname")
+        constant(value="\",\"severity\":\"")    property(name="syslogseverity-text")
+        constant(value="\",\"facility\":\"")    property(name="syslogfacility-text")
+        constant(value="\",\"syslog-tag\":\"")  property(name="syslogtag")
+        constant(value="\"}")
+  }
+  ```
+
+  Send just TCP syslogs on `expose_port` to kafka:
+  ```
+  if $inputname == "imtcp"then {
+        action(type="omkafka"
+            template="json_lines"
+            broker=["dbaas.abriment.com:32744"]
+            topic="logs"
+            partitions.auto="on"
+            confParam=[
+                "socket.keepalive.enable=true"
+            ]
+        )
+  }
+  ```
+
+  > **Note**
+  > Also there are some other option that aren't use in this project but may be useful for other scenarios:
+  > ```
+  > # Send all logs on 192.168.20.30:514 and @@ for TCP and @ for UDP
+  > *.*  @@192.168.20.30:514
+  > ```
+  > ```
+  > # Save logs in file with this format of path
+  > $template RemoteLogs,"/var/log/hosts/%HOSTNAME%/%$YEAR%/%$MONTH%/%$DAY%/syslog.log"
+  > *.* ?RemoteLogs
+  > ```
