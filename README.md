@@ -43,7 +43,7 @@ Using Elasticsearch. Then create index pattern, index template, index lifecycle 
   ```
 
 - **Log-generator**
-  First we should copy generator.sh[./generator.sh] to `/opt/log-generator/`
+  First we should copy [generator.sh](./generator.sh) to `/opt/log-generator/`
   Then define log-generator.service in `/etc/systemd/system/`
   ```bash
   [Unit]
