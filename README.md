@@ -39,7 +39,7 @@ Using Elasticsearch. Then create index pattern, index template, index lifecycle 
   cd /etc/yum.repos.d/
   wget http://rpms.adiscon.com/v8-stable-daily/rsyslog-daily.repo # for CentOS 7,8,9
   wget http://rpms.adiscon.com/v8-stable-daily/rsyslog-daily-rhel.repo # for RHEL 7,8,9
-  yum install rsyslog
+  yum install rsyslog rsyslog-kafka
   ```
 
 - **Log-generator**
