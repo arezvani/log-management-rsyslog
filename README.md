@@ -55,7 +55,7 @@ Using Elasticsearch. Then create index pattern, index template, index lifecycle 
   > There is [GUI Dashboard](https://lggr.io/) for Rsyslog that you can use that.
 
 - **Log-generator**
-- 
+  
   First we should copy [generator.sh](./generator.sh) to `/opt/log-generator/`
   Then define log-generator.service in `/etc/systemd/system/`
   ```bash
