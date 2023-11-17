@@ -42,7 +42,20 @@ Using Elasticsearch. Then create index pattern, index template, index lifecycle 
   yum install rsyslog rsyslog-kafka
   ```
 
+  > **Note**  
+  > You can run Rsyslog as a Docker Container or Kubernetes Deployment:
+  > 
+  > [https://itnext.io/run-rsyslog-server-in-kubernetes-bb51a7a6e227]
+  > 
+  > [https://itnext.io/run-rsyslog-server-in-kubernetes-bb51a7a6e227]
+  > 
+  > [https://github.com/puzzle/kubernetes-rsyslog-logging/tree/master]
+
+  > **Note**
+  > There is [GUI Dashboard](https://lggr.io/) for Rsyslog that you can use that.
+
 - **Log-generator**
+- 
   First we should copy [generator.sh](./generator.sh) to `/opt/log-generator/`
   Then define log-generator.service in `/etc/systemd/system/`
   ```bash
@@ -57,7 +70,7 @@ Using Elasticsearch. Then create index pattern, index template, index lifecycle 
   WantedBy=multi-user.target
   ```
 
-  > [!NOTE]  
+  > **Note**
   > You can change expose_port with each not binding port you want. 
   
   ```bash
@@ -67,6 +80,45 @@ Using Elasticsearch. Then create index pattern, index template, index lifecycle 
   ```bash
   nc -k -lv $expose_port
   ```
+
+- **Logstash**
+
+  Download and install the public signing key:
+  ```bash
+  sudo rpm --import https://artifacts.elastic.co/GPG-KEY-elasticsearch
+  ```
+
+  Add the following in your `/etc/yum.repos.d/` directory in a file with a `.repo` suffix, for example `logstash.repo`:
+  ```bash
+  [logstash-8.x]
+  name=Elastic repository for 8.x packages
+  baseurl=https://artifacts.elastic.co/packages/8.x/yum
+  gpgcheck=1
+  gpgkey=https://artifacts.elastic.co/GPG-KEY-elasticsearch
+  enabled=1
+  autorefresh=1
+  type=rpm-md
+  ```
+
+  And your repository is ready for use. You can install it with:
+  ```bash
+  sudo yum install logstash
+
+  systemctl enable --now logstash
+  ```
+
+  > **Note**
+  > Images are available for running Logstash as a Docker container. They are available from the Elastic Docker registry.
+  > 
+  > See [Running Logstash on Docker](https://www.elastic.co/guide/en/logstash/current/docker.html) for details on how to configure and run Logstash Docker containers.
+
+
+- **Kafka**
+
+- **Elasticsearch and Kibana**
+
+
+## Configuration
 
 - **Config Rsyslog to send logs to kafka**
 
@@ -100,7 +152,7 @@ Using Elasticsearch. Then create index pattern, index template, index lifecycle 
   if $inputname == "imtcp"then {
         action(type="omkafka"
             template="json_lines"
-            broker=["dbaas.abriment.com:32744"]
+            broker=["************:****"]
             topic="logs"
             partitions.auto="on"
             confParam=[
@@ -121,3 +173,48 @@ Using Elasticsearch. Then create index pattern, index template, index lifecycle 
   > $template RemoteLogs,"/var/log/hosts/%HOSTNAME%/%$YEAR%/%$MONTH%/%$DAY%/syslog.log"
   > *.* ?RemoteLogs
   > ```
+
+- **Config Logstash to parse and send logs from kafka to elastic**
+  
+  Create config file in `/etc/logstash/conf.d/kafka_input.conf`:
+  
+  ```bash
+  input {
+	kafka{
+		bootstrap_servers => "dbaas.abriment.com:32744"
+		topics => ["logs"]
+		codec => json {}
+	}
+	}
+	
+	filter {
+		json {
+		source => "message"
+		}
+	}
+	
+	output {
+	elasticsearch {
+		hosts => ["https://dbaas.abriment.com:30358"]
+		ssl_verification_mode => "none"
+		user => "elastic"
+		password => "SAra@131064"
+		index => "kafka_test"
+	}
+	}
+  ```
+
+  You can check config with this command:/etc/logstash/logstash.yml
+  ```bash
+  bin/logstash -f configfile.conf --config.reload.automatic
+  ```
+
+  You can check logs in `/var/log/logstash/logstash-plain.log`
+
+  Logstash configs like `pipeline.workers` are in `/etc/logstash/logstash.yml` that you can change them for better performance.
+
+
+- **Elasticsearch configuration**
+  You should have index with proper shard and replica number due to cluster and architecture. Then you should create Index Template and Index Lifecycle Policy.
+
+  ![image](https://github.com/arezvani/log-management-rsyslog/assets/20871524/5177ec20-ef78-4c13-9658-ebb24d863030)
