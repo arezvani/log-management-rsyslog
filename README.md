@@ -181,7 +181,7 @@ Using Elasticsearch. Then create index pattern, index template, index lifecycle 
   ```bash
   input {
 	kafka{
-		bootstrap_servers => "dbaas.abriment.com:32744"
+		bootstrap_servers => "************:****"
 		topics => ["logs"]
 		codec => json {}
 	}
@@ -195,11 +195,11 @@ Using Elasticsearch. Then create index pattern, index template, index lifecycle 
 	
 	output {
 	elasticsearch {
-		hosts => ["https://dbaas.abriment.com:30358"]
+		hosts => ["https://***********:****"]
 		ssl_verification_mode => "none"
-		user => "elastic"
-		password => "SAra@131064"
-		index => "kafka_test"
+		user => "*****"
+		password => "********"
+		index => "*****"
 	}
 	}
   ```
