@@ -29,7 +29,7 @@ EOF
 );
 
 elif [ "$1" = "random_person" ]; then
-message=$(curl -s https://randomuser.me/api/?results=1);
+message=$(curl -s https://randomuser.me/api/?results=1 | jq -c .results[0]);
 fi
 
 if [ $# -eq 0 ]; then
